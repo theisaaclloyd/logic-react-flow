@@ -1,155 +1,158 @@
-// Import necessary dependencies
 "use client";
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
+
 import ReactFlow, {
-	MiniMap,
-	Controls,
 	Background,
 	useNodesState,
 	useEdgesState,
 	addEdge,
-	Handle,
-	Position,
-	Node,
-	Panel,
-	ControlButton,
+	updateEdge,
+	ReactFlowProvider
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { MagicWandIcon } from '@radix-ui/react-icons';
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-	DialogClose
-} from "@/components/ui/dialog";
-import {
-	Drawer,
-	DrawerClose,
-	DrawerContent,
-	DrawerDescription,
-	DrawerFooter,
-	DrawerHeader,
-	DrawerTitle,
-	DrawerTrigger,
-} from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import './logic.css';
 
-// Define a custom logic gate node
-const TwoInputAnd = ({ id, data }) => {
-	const [dialogOpen, setDialog] = useState(false);
-	const [gateSettings, setGateSettings] = useState({
-		delay: 0,
-	});
 
-	const handleGateSettingsChange = (e) => {
-		const { name, value } = e.target;
-		setGateSettings((prevSettings) => ({
-			...prevSettings,
-			[name]: parseInt(value, 10),
-		}));
-	};
+import { TwoInputAnd, TwoInputOr } from './nodes/BasicGates';
+import { InputButton } from './nodes/Inputs';
+import { OutputLED } from './nodes/Outputs';
 
-	return (
-		<>
-			<Dialog open={dialogOpen} onOpenChange={setDialog}>
-				<DialogTrigger asChild>
-					<div className='bg-white text-black border-2 rounded-md p-5 w-20 h-20 flex justify-center items-center'>
-						<Handle
-							type="source"
-							position={Position.Right}
-							id={`${id}-out`}
-							style={{ top: '50%' }}
-						/>
+import CommandMenu from './components/CommandMenu';
+import MainPanel from './components/MainPanel';
+import FloatingMiniMap from './components/MiniMap';
+import ControlPanel from './components/ControlPanel';
 
-						<Handle
-							type="target"
-							position={Position.Left}
-							id={`${id}-A`}
-							style={{ top: '25%' }}
-						/>
-
-						<Handle
-							type="target"
-							position={Position.Left}
-							id={`${id}-B`}
-							style={{ top: '75%' }}
-						/>
-
-						<div className='cursor-pointer'  >|{data.label || id}|</div>
-					</div>
-				</DialogTrigger>
-				<DialogContent className="sm:max-w-[425px] bg-white text-black">
-					<DialogHeader>
-						<DialogTitle>Gate settings</DialogTitle>
-						<DialogDescription>
-							Make changes to the gate settings
-						</DialogDescription>
-					</DialogHeader>
-					<form className={"grid items-start gap-4"}>
-						<label>
-							Number of Inputs:
-							<input
-								type="number"
-								name="inputs"
-								value={gateSettings.inputs}
-								onChange={handleGateSettingsChange}
-								min="2"
-								max="4"
-							/>
-						</label>
-						<label>
-							Delay Time (ms):
-							<input
-								type="number"
-								name="delay"
-								value={gateSettings.delay}
-								onChange={handleGateSettingsChange}
-							/>
-						</label>
-					</form>
-				</DialogContent>
-			</Dialog>
-		</>
-	);
-};
 
 const initialNodes = [
-	{
+	/*{
 		id: 'gate-1',
-		type: 'gate',
-		data: { label: 'AND Gate' },
-		position: { x: 150, y: 150 },
+		type: '2_and',
+		data: { label: 'AND' },
+		position: { x: 154, y: 154 },
 	},
-
 	{
 		id: 'gate-2',
-		type: 'gate',
-		data: { label: 'AND Gate' },
-		position: { x: 350, y: 150 },
-	},
+		type: '2_or',
+		data: { label: 'OR' },
+		position: { x: 350, y: 154 },
+	},*/
 ];
 
 const initialEdges = [];
 
 const nodeTypes = {
-	gate: TwoInputAnd,
+	'2_and': TwoInputAnd,
+	'2_or': TwoInputOr,
+	'in_button': InputButton,
+	'out_led': OutputLED,
 };
 
-// Main Flow component
-export default function Flow() {
-	const [nodes, , onNodesChange] = useNodesState(initialNodes);
+
+let id = 0;
+const getId = () => `node_${id++}`;
+
+function FlowCanvas() {
+	const edgeUpdateSuccessful = useRef(true);
+	//const reactFlowWrapper = useRef(null);
+
+	const [reactFlowInstance, setReactFlowInstance] = useState(null);
+
+	const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
 	const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
 	const onConnect = useCallback(
 		(params) => setEdges((eds) => addEdge(params, eds)),
 		[setEdges],
 	);
+
+	const onDragOver = useCallback((event) => {
+		event.preventDefault();
+		event.dataTransfer.dropEffect = 'move';
+	}, []);
+
+	const onDrop = useCallback(
+		(event) => {
+			event.preventDefault();
+
+			const type = event.dataTransfer.getData('application/reactflow');
+
+			// check if the dropped element is valid
+			if (typeof type === 'undefined' || !type) {
+				return;
+			}
+
+			const position = reactFlowInstance.screenToFlowPosition({
+				x: event.clientX,
+				y: event.clientY,
+			});
+			const newNode = {
+				id: getId(),
+				type,
+				position,
+				data: { label: `${type} node`, inputs: { 0: 0, 1: 0 }, output: { 0: 0 } },
+			};
+
+			setNodes((nds) => nds.concat(newNode));
+			//alert(JSON.stringify(nodes));
+		},
+		[reactFlowInstance],
+	);
+
+	const onEdgeUpdateStart = useCallback(() => {
+		edgeUpdateSuccessful.current = false;
+	}, []);
+
+	const onEdgeUpdate = useCallback((oldEdge, newConnection) => {
+		edgeUpdateSuccessful.current = true;
+
+		setEdges((els) => updateEdge(oldEdge, newConnection, els));
+	}, []);
+
+	const onEdgeUpdateEnd = useCallback((_, edge) => {
+		if (!edgeUpdateSuccessful.current) {
+			setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+		}
+
+		edgeUpdateSuccessful.current = true;
+	}, []);
+
+	const onEdgeDoubleClick = (event, clickedEdge) => {
+		setEdges((edges) => edges.filter((edge) => edge.id !== clickedEdge.id));
+	};
+
+	const onSelectionChange = (elements) => {
+		if (elements.edges.length == 0) {
+			setEdges((edges) => { // todo: make this a separate function
+				const hasAnimatedEdges = edges.some((edge) => edge.animated);
+
+				if (hasAnimatedEdges) {
+					return edges.map((edge) => {
+						return {
+							...edge,
+							animated: false,
+						};
+					});
+				}
+
+				return edges;
+			});
+		}
+	};
+
+	const onEdgeClick = (event, clickedEdge) => {
+		setEdges((edges) =>
+			edges.map((edge) => {
+				if (edge.id === clickedEdge.id) {
+					return {
+						...edge,
+						animated: true,
+					};
+				}
+				return edge;
+			}),
+		);
+	};
 
 	return (
 		<div className='bg-white w-full h-full'>
@@ -158,23 +161,38 @@ export default function Flow() {
 				edges={edges}
 				onNodesChange={onNodesChange}
 				onEdgesChange={onEdgesChange}
+				onEdgeUpdate={onEdgeUpdate}
+				onEdgeUpdateStart={onEdgeUpdateStart}
+				onEdgeUpdateEnd={onEdgeUpdateEnd}
 				onConnect={onConnect}
+				className="touchdevice-flow"
+				onInit={setReactFlowInstance}
+				onDrop={onDrop}
+				onDragOver={onDragOver}
 				snapToGrid
-				snapGrid={[15, 15]}
+				snapGrid={[14, 14]}
 				nodeTypes={nodeTypes}
 				attributionPosition='hidden'
 				fitView
-				defaultEdgeOptions={{ animated: true }}
+				defaultEdgeOptions={{ animated: false, type: 'smooth', style: { stroke: 'green' } }}
+				onEdgeDoubleClick={onEdgeDoubleClick}
+				onEdgeClick={onEdgeClick}
+				onSelectionChange={onSelectionChange}
 			>
-				<Panel position="top-left" className='bg-white text-black p-5 border-2'>panel</Panel>
-				<Controls>
-					<ControlButton onClick={() => alert('Test auto organize button')}>
-						<MagicWandIcon />
-					</ControlButton>
-				</Controls>
-				<MiniMap pannable zoomable className='cursor-move' />
-				<Background variant="dots" gap={15} size={1} />
+				<MainPanel />
+				<ControlPanel />
+				<FloatingMiniMap />
+				<Background variant="cross" gap={14} size={7} />
 			</ReactFlow>
 		</div >
+	);
+};
+
+export default function Flow() {
+	return (
+		<ReactFlowProvider>
+			<FlowCanvas />
+			<CommandMenu />
+		</ReactFlowProvider>
 	);
 }
