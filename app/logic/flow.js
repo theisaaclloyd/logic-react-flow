@@ -25,7 +25,7 @@ import ControlPanel from './components/ControlPanel';
 
 
 const initialNodes = [
-	/*{
+	{
 		id: 'gate-1',
 		type: '2_and',
 		data: { label: 'AND' },
@@ -36,7 +36,7 @@ const initialNodes = [
 		type: '2_or',
 		data: { label: 'OR' },
 		position: { x: 350, y: 154 },
-	},*/
+	},
 ];
 
 const initialEdges = [];

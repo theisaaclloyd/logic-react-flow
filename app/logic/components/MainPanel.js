@@ -22,7 +22,7 @@ import {
 
 
 export default function MainPanel() {
-	const [floating, setFloating] = useState(true);
+	const [floating, setFloating] = useState(false);
 
 	const onDragStart = (event, nodeType) => {
 		event.dataTransfer.setData('application/reactflow', nodeType);

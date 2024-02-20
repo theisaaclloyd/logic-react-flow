@@ -13,7 +13,7 @@ import {
 import { useEffect, useState } from "react";
 
 
-export function CommandMenu() {
+export default function CommandMenu() {
 	const [open, setOpen] = useState(false);
 
 	useEffect(() => {
