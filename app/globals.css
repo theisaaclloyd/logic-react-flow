@@ -2,32 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
+@layer base {
+  .Quasimoda-Regular {
+    font-family: quasimoda, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+  .Gitan-Regular {
+    font-family: gitan-latin, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  .Anth-Regular {
+    font-family: anth, sans-serif;
+    font-style: normal;
+    font-weight: 400;
+  }
+
+  .Club-Regular {
+    font-family: "club-lithographer", sans-serif;
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  .Caslon-Regular {
+    font-family: adobe-caslon-pro, serif;
+    font-style: normal;
+    font-weight: 400;
+  }
+
+  .Calibri-Regular {
+    font-family: "calibri", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  .FFMeta-Regular {
+    font-family: "ff-meta-correspondence-web-p", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  .fade-in {
+    animation: fadeIn 300ms ease-in-out;
+  }
+
+  .flex-container {
+    transition: margin 300ms ease-in-out;
+  }
+
+  .image-container {
+    transition: order 300ms ease-in-out, margin 300ms ease-in-out;
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate3d(-5px, 10px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition: opacity 300ms, transform 300ms;
+  }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+@media (max-width: 768px) {
+  .image-container {
+    order: -1;
+    margin-bottom: 1rem;
+  }
+
+  .flex-container {
+    margin-top: 0;
   }
 }
