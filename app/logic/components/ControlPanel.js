@@ -1,14 +1,6 @@
 import { Controls, ControlButton } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { toPng } from 'html-to-image';
-
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
-
 import { CameraIcon } from '@radix-ui/react-icons';
 
 
@@ -38,18 +30,9 @@ export default function ControlPanel() {
 
 	return (
 		<Controls position='bottom-right'>
-			<TooltipProvider>
-				<Tooltip>
-					<TooltipTrigger>
-						<ControlButton onClick={Screenshot}>
-							<CameraIcon className='text-black' />
-						</ControlButton>
-					</TooltipTrigger>
-					<TooltipContent>
-						<p>Screenshot</p>
-					</TooltipContent>
-				</Tooltip>
-			</TooltipProvider>
+			<ControlButton onClick={Screenshot}>
+				<CameraIcon className='text-black' />
+			</ControlButton>
 		</Controls>
 	);
 };
