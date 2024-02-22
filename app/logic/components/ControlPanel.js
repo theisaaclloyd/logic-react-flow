@@ -22,7 +22,8 @@ export default function ControlPanel() {
 			},
 		}).then((blobUrl) => {
 			const a = document.createElement('a');
-			a.setAttribute('download', 'reactflow.png');
+			const tag = new Date().toISOString().replace(/:/g, '-');
+			a.setAttribute('download', `circuit-${tag}.png`);
 			a.setAttribute('href', blobUrl);
 			a.click();
 		});
