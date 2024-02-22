@@ -1,158 +1,130 @@
 "use client";
 
-import React, { useCallback, useState, useRef } from 'react';
-
-import ReactFlow, {
-	Background,
-	useNodesState,
-	useEdgesState,
-	addEdge,
-	updateEdge,
-	ReactFlowProvider
-} from 'reactflow';
+import { useCallback, useState, useRef } from 'react';
+import ReactFlow, { Background, Panel, ReactFlowProvider } from 'reactflow';
 import 'reactflow/dist/style.css';
 import './logic.css';
 
+import { shallow } from 'zustand/shallow';
+import { useControls } from 'leva';
 
-import { TwoInputAnd, TwoInputOr } from './nodes/BasicGates';
-import { InputButton } from './nodes/Inputs';
-import { OutputLED } from './nodes/Outputs';
+import { CommandMenu, MainPanel, FloatingMiniMap, ControlPanel } from './components/Components';
+import { nodeTypes, edgeTypes } from './components/Types';
 
-import CommandMenu from './components/CommandMenu';
-import MainPanel from './components/MainPanel';
-import FloatingMiniMap from './components/MiniMap';
-import ControlPanel from './components/ControlPanel';
-
-
-const initialNodes = [
-	{
-		id: 'gate-1',
-		type: '2_and',
-		data: { label: 'AND' },
-		position: { x: 154, y: 154 },
-	},
-	{
-		id: 'gate-2',
-		type: '2_or',
-		data: { label: 'OR' },
-		position: { x: 350, y: 154 },
-	},
-];
-
-const initialEdges = [];
-
-const nodeTypes = {
-	'2_and': TwoInputAnd,
-	'2_or': TwoInputOr,
-	'in_button': InputButton,
-	'out_led': OutputLED,
-};
+import storeManager from './utils/store';
+import { v1 as uuidv1 } from 'uuid';
 
 
-let id = 0;
-const getId = () => `node_${id++}`;
+const selector = (state) => ({
+	nodes: state.nodes,
+	edges: state.edges,
+	setEdges: state.setEdges,
+	onNodesChange: state.onNodesChange,
+	onEdgesChange: state.onEdgesChange,
+	//onConnect: state.onConnect,
+	addConnection: state.addConnection,
+	addNode: state.addNode,
+	updateEdge: state.updateEdge,
+	removeEdge: state.removeEdge,
+	resetAnimatedEdges: state.resetAnimatedEdges,
+	toggleEdgeAnimation: state.toggleEdgeAnimation,
+});
+
+const getId = () => `${uuidv1()}`;
 
 function FlowCanvas() {
 	const edgeUpdateSuccessful = useRef(true);
-	//const reactFlowWrapper = useRef(null);
 
 	const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
-	const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-	const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+	const { showNodes, showEdges } = useControls({ showNodes: false, showEdges: false, });
 
-	const onConnect = useCallback(
-		(params) => setEdges((eds) => addEdge(params, eds)),
-		[setEdges],
-	);
+	const {
+		nodes, edges, setEdges,
+		onNodesChange, onEdgesChange,
+		addConnection, addNode, updateEdge,
+		removeEdge, resetAnimatedEdges,
+		toggleEdgeAnimation
+	} = storeManager(selector, shallow);
 
 	const onDragOver = useCallback((event) => {
 		event.preventDefault();
 		event.dataTransfer.dropEffect = 'move';
 	}, []);
 
-	const onDrop = useCallback(
-		(event) => {
-			event.preventDefault();
 
-			const type = event.dataTransfer.getData('application/reactflow');
-
-			// check if the dropped element is valid
-			if (typeof type === 'undefined' || !type) {
-				return;
-			}
-
-			const position = reactFlowInstance.screenToFlowPosition({
-				x: event.clientX,
-				y: event.clientY,
-			});
-			const newNode = {
-				id: getId(),
-				type,
-				position,
-				data: { label: `${type} node`, inputs: { 0: 0, 1: 0 }, output: { 0: 0 } },
-			};
-
-			setNodes((nds) => nds.concat(newNode));
-			//alert(JSON.stringify(nodes));
-		},
-		[reactFlowInstance],
-	);
-
+	// todo fix edge update
 	const onEdgeUpdateStart = useCallback(() => {
 		edgeUpdateSuccessful.current = false;
 	}, []);
-
-	const onEdgeUpdate = useCallback((oldEdge, newConnection) => {
-		edgeUpdateSuccessful.current = true;
-
-		setEdges((els) => updateEdge(oldEdge, newConnection, els));
-	}, []);
-
 	const onEdgeUpdateEnd = useCallback((_, edge) => {
 		if (!edgeUpdateSuccessful.current) {
-			setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+			removeEdge(edge);
 		}
-
 		edgeUpdateSuccessful.current = true;
-	}, []);
+	}, [removeEdge]);
 
-	const onEdgeDoubleClick = (event, clickedEdge) => {
-		setEdges((edges) => edges.filter((edge) => edge.id !== clickedEdge.id));
-	};
 
-	const onSelectionChange = (elements) => {
-		if (elements.edges.length == 0) {
-			setEdges((edges) => { // todo: make this a separate function
-				const hasAnimatedEdges = edges.some((edge) => edge.animated);
+	const onDrop = useCallback((event) => {
+		event.preventDefault();
 
-				if (hasAnimatedEdges) {
-					return edges.map((edge) => {
-						return {
-							...edge,
-							animated: false,
-						};
-					});
-				}
+		const type = event.dataTransfer.getData('application/reactflow');
 
-				return edges;
-			});
+		if (typeof type === 'undefined' || !type) {
+			return;
 		}
-	};
 
-	const onEdgeClick = (event, clickedEdge) => {
-		setEdges((edges) =>
-			edges.map((edge) => {
-				if (edge.id === clickedEdge.id) {
-					return {
-						...edge,
-						animated: true,
-					};
-				}
-				return edge;
-			}),
-		);
-	};
+		const position = reactFlowInstance
+			.screenToFlowPosition({
+				x: event.clientX,
+				y: event.clientY,
+			});
+
+		const newNode = {
+			id: `node_${getId()}`,
+			type,
+			position,
+			data: {
+				label: `${type} node`,
+				inputs: { 0: 2, 1: 2 },
+				output: { 0: 2 }
+			},
+		};
+
+		addNode(newNode);
+	}, [addNode, reactFlowInstance]);
+
+	const onConnect = useCallback((connection) => {
+		const newEdge = {
+			...connection,
+			id: `edge_${getId()}`,
+			animated: false,
+			data: {
+				label: 'edge label',
+				state: 2,
+			},
+		};
+
+		addConnection(newEdge);
+	}, [addConnection]);
+
+	const onEdgeUpdate = useCallback((oldEdge, newConnection) => {
+		updateEdge(oldEdge, newConnection);
+	}, [updateEdge]);
+
+	const onEdgeDoubleClick = useCallback((event, edge) => {
+		removeEdge(edge);
+	}, [removeEdge]);
+
+	const onSelectionChange = useCallback((elements) => {
+		if (elements.edges.length == 0) {
+			resetAnimatedEdges();
+		}
+	}, [resetAnimatedEdges]);
+
+	const onEdgeClick = useCallback((event, edge) => {
+		toggleEdgeAnimation(edge.id);
+	}, [toggleEdgeAnimation]);
 
 	return (
 		<div className='bg-white w-full h-full'>
@@ -161,10 +133,10 @@ function FlowCanvas() {
 				edges={edges}
 				onNodesChange={onNodesChange}
 				onEdgesChange={onEdgesChange}
+				onConnect={onConnect}
 				onEdgeUpdate={onEdgeUpdate}
 				onEdgeUpdateStart={onEdgeUpdateStart}
 				onEdgeUpdateEnd={onEdgeUpdateEnd}
-				onConnect={onConnect}
 				className="touchdevice-flow"
 				onInit={setReactFlowInstance}
 				onDrop={onDrop}
@@ -172,13 +144,18 @@ function FlowCanvas() {
 				snapToGrid
 				snapGrid={[14, 14]}
 				nodeTypes={nodeTypes}
+				edgeTypes={edgeTypes}
 				attributionPosition='hidden'
 				fitView
-				defaultEdgeOptions={{ animated: false, type: 'smooth', style: { stroke: 'green' } }}
+				defaultEdgeOptions={{ animated: false, type: 'customEdge', style: { stroke: 'green' } }}
 				onEdgeDoubleClick={onEdgeDoubleClick}
 				onEdgeClick={onEdgeClick}
 				onSelectionChange={onSelectionChange}
 			>
+				<Panel position="bottom-left" className={`bg-white text-black p-5 border-2 flex text-lg`}>
+					<div hidden={!showNodes}>{JSON.stringify(nodes)}</div>
+					<div hidden={!showEdges}>{JSON.stringify(edges)}</div>
+				</Panel>
 				<MainPanel />
 				<ControlPanel />
 				<FloatingMiniMap />
