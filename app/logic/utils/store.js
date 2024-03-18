@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { addEdge, applyNodeChanges, applyEdgeChanges, } from 'reactflow';
 import { produce } from 'immer';
+import Simulator from './simulator';
 
 const initialNodes = require('./defaultNodes.json');
 const initialEdges = require('./defaultEdges.json');
@@ -20,9 +21,33 @@ const storeManager = create(produce((set, get) => ({
 		});
 	},*/
 
+	simulateCircuit: () => {
+		// Call the simulation function with the current state of nodes and edges
+		const graph = Simulator(get().nodes, get().edges);
 
-	//todo set node state
-	//todo set edge state
+		alert('Simulated graph!');
+		console.log('Simulated graph:', JSON.stringify(graph));
+
+		// Apply the simulation results to the state
+		// This assumes that your nodes have some 'data.state' property to reflect their simulation state
+		/* set(state => {
+			state.nodes = state.nodes.map(node => {
+				if (graph[node.id]) {
+					return {
+						...node,
+						data: {
+							...node.data,
+							state: graph[node.id].state,
+						},
+					};
+				}
+				return node;
+			});
+
+			// Optional: If you have edge animations or styles to reflect logic flow,
+			// update your edges based on new logic state here
+		}); */
+	},
 
 
 	onNodesChange: (changes) => {

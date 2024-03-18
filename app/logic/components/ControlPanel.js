@@ -1,10 +1,13 @@
 import { Controls, ControlButton } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { toPng } from 'html-to-image';
-import { CameraIcon } from '@radix-ui/react-icons';
+import { CameraIcon, MagicWandIcon } from '@radix-ui/react-icons';
+import storeManager from '../utils/store';
 
 
 export default function ControlPanel() {
+
+	const simulate = storeManager(state => state.simulateCircuit);
 
 	const Screenshot = () => {
 		toPng(document.querySelector('.react-flow'), {
@@ -33,6 +36,10 @@ export default function ControlPanel() {
 		<Controls position='bottom-right'>
 			<ControlButton onClick={Screenshot}>
 				<CameraIcon className='text-black' />
+			</ControlButton>
+
+			<ControlButton onClick={simulate}>
+				<MagicWandIcon className='text-black' />
 			</ControlButton>
 		</Controls>
 	);

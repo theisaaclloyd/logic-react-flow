@@ -21,6 +21,7 @@ const selector = (state) => ({
 	setEdges: state.setEdges,
 	onNodesChange: state.onNodesChange,
 	onEdgesChange: state.onEdgesChange,
+	simulateCircuit: state.simulateCircuit,
 	//onConnect: state.onConnect,
 	addConnection: state.addConnection,
 	addNode: state.addNode,
@@ -44,7 +45,7 @@ function FlowCanvas() {
 		onNodesChange, onEdgesChange,
 		addConnection, addNode, updateEdge,
 		removeEdge, resetAnimatedEdges,
-		toggleEdgeAnimation
+		toggleEdgeAnimation, simulateCircuit
 	} = storeManager(selector, shallow);
 
 	const onDragOver = useCallback((event) => {
@@ -151,6 +152,8 @@ function FlowCanvas() {
 				onEdgeDoubleClick={onEdgeDoubleClick}
 				onEdgeClick={onEdgeClick}
 				onSelectionChange={onSelectionChange}
+				minZoom={0.1}
+				maxZoom={10}
 			>
 				<Panel position="bottom-left" className={`bg-white text-black p-5 border-2 flex text-lg`}>
 					<div hidden={!showNodes}>{JSON.stringify(nodes)}</div>

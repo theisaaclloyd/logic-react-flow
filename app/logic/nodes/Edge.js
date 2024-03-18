@@ -32,8 +32,6 @@ const Edge = ({
 
 	const sourceNodeState = nodes.filter((n) => n.id == sourceNode)[0]?.data?.output?.[0];
 
-	//StateColor(data?.state)
-
 	return (
 		<g>
 			<path id={id} style={{ ...style, stroke: StateColor(sourceNodeState) }} className="react-flow__edge-path" d={edgePath} markerEnd={markerEnd} />
