@@ -1,5 +1,5 @@
-import { MiniMap } from 'reactflow';
-import 'reactflow/dist/style.css';
+import { MiniMap } from '@xyflow/react';
+import "@xyflow/react/dist/style.css";
 
 export default function FloatingMiniMap() {
 	return (

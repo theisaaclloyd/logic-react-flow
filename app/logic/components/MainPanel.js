@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { Panel } from 'reactflow';
-import 'reactflow/dist/style.css';
+import { Panel } from '@xyflow/react';
+import "@xyflow/react/dist/style.css";
 import { PinLeftIcon } from "@radix-ui/react-icons";
 
 import {
