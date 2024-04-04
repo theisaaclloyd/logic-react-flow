@@ -1,10 +1,10 @@
 // CustomEdge.js
 import React from 'react';
-import { getBezierPath, getMarkerEnd, getStraightPath } from '@xyflow/react';
+import { BaseEdge, getSmoothStepPath } from '@xyflow/react';
 import useStore from '../utils/store';
 import StateColor from '../utils/StateColor';
 
-const Edge = ({
+function CustomEdge({
 	id,
 	sourceX,
 	sourceY,
@@ -13,38 +13,51 @@ const Edge = ({
 	sourcePosition,
 	targetPosition,
 	style = {},
-	data,
-	//arrowHeadType,
-	//markerEndId,
-}) => {
-	const edgePath = getBezierPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
-	//const edgePath = getStraightPath({ sourceX, sourceY, targetX, targetY });
-	//const markerEnd = getMarkerEnd(arrowHeadType, markerEndId);
-
-	//const edgePath = `M ${sourceX},${sourceY}L ${targetX},${targetY}`;
+	markerEnd,
+	data
+}) {
+	const [edgePath, labelX, labelY, offsetX, offsetY] = getSmoothStepPath({
+		sourceX,
+		sourceY,
+		sourcePosition,
+		targetX,
+		targetY,
+		targetPosition,
+		borderRadius: 0.5,
+		offset: 0,
+	});
 
 	const { nodes, edges } = useStore();
 
 	const currEdge = edges.filter((e) => e.id == id)[0];
 
 	const sourceNode = currEdge?.source;
-	const targetNode = currEdge?.target;
-	// update the state of the target node
-	//updateNodeInputs(targetNode, { 0: 3, 1: 4 });
 
 
 	const sourceNodeState = nodes.filter((n) => n.id == sourceNode)[0]?.data?.out;
 
-	return (
-		<g>
-			<path id={id} style={{ ...style, stroke: StateColor(sourceNodeState) }} type="straight" className="react-flow__edge-path" d={edgePath} /* markerEnd={markerEnd} */ />
-			<text>
-				<textPath href={`#${id}`} style={{ fontSize: '10px' }} startOffset="50%" textAnchor="middle">
-					{data?.label}
-				</textPath>
-			</text>
-		</g>
-	);
-};
+	const newStyle = { ...style, stroke: StateColor(sourceNodeState) }
 
-export default Edge;
+	return (
+		<>
+			<BaseEdge id={id} path={edgePath} markerEnd={markerEnd} style={newStyle} />
+			{/* <EdgeLabelRenderer>
+				<div
+					style={{
+						position: 'absolute',
+						transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+						fontSize: 12,
+						pointerEvents: 'all',
+					}}
+					className="nodrag nopan"
+				>
+					<button className="edgebutton">
+						{data?.label}
+					</button>
+				</div>
+			</EdgeLabelRenderer> */}
+		</>
+	);
+}
+
+export default CustomEdge;

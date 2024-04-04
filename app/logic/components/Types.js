@@ -4,7 +4,7 @@ import TwoInputOr from '../nodes/OrGate';
 import InputButton from '../nodes/Inputs';
 import OutputLED from '../nodes/Outputs';
 
-import Edge from '../nodes/Edge';
+import CustomEdge from '../nodes/Edge';
 
 const nodeTypes = {
 	'2_and': TwoInputAnd,
@@ -14,7 +14,7 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-	'customEdge': Edge,
+	'customEdge': CustomEdge,
 };
 
 export { nodeTypes, edgeTypes };
