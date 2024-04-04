@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useState, useRef } from 'react';
-import ReactFlow, { Background, Panel, ReactFlowProvider } from 'reactflow';
-import 'reactflow/dist/style.css';
+import { ReactFlow, Background, Panel, ReactFlowProvider, Connection } from '@xyflow/react';
+import "@xyflow/react/dist/style.css";
 import './logic.css';
 
 import { shallow } from 'zustand/shallow';
@@ -11,7 +11,7 @@ import { useControls } from 'leva';
 import { CommandMenu, MainPanel, FloatingMiniMap, ControlPanel } from './components/Components';
 import { nodeTypes, edgeTypes } from './components/Types';
 
-import storeManager from './utils/store';
+import useStore from './utils/store';
 import { v1 as uuidv1 } from 'uuid';
 
 
@@ -38,7 +38,14 @@ function FlowCanvas() {
 
 	const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
-	const { showNodes, showEdges } = useControls({ showNodes: false, showEdges: false, });
+	const { showNodes, showEdges, colorMode } = useControls({
+		showNodes: false,
+		showEdges: false,
+		colorMode: {
+			value: 'light',
+			options: ['light', 'dark', 'system'],
+		},
+	});
 
 	const {
 		nodes, edges, setEdges,
@@ -46,7 +53,7 @@ function FlowCanvas() {
 		addConnection, addNode, updateEdge,
 		removeEdge, resetAnimatedEdges,
 		toggleEdgeAnimation, simulateCircuit
-	} = storeManager(selector, shallow);
+	} = useStore(selector, shallow);
 
 	const onDragOver = useCallback((event) => {
 		event.preventDefault();
@@ -87,8 +94,8 @@ function FlowCanvas() {
 			position,
 			data: {
 				label: `${type} node`,
-				inputs: { 0: 2, 1: 2 },
-				output: { 0: 2 }
+				in: [0],
+				out: 0
 			},
 		};
 
@@ -100,10 +107,10 @@ function FlowCanvas() {
 			...connection,
 			id: `edge_${getId()}`,
 			animated: false,
-			data: {
+			/*  data: {
 				label: 'edge label',
 				state: 2,
-			},
+			}, */
 		};
 
 		addConnection(newEdge);
@@ -152,6 +159,7 @@ function FlowCanvas() {
 				onEdgeDoubleClick={onEdgeDoubleClick}
 				onEdgeClick={onEdgeClick}
 				onSelectionChange={onSelectionChange}
+				colorMode={colorMode}
 				minZoom={0.1}
 				maxZoom={10}
 			>
@@ -170,9 +178,11 @@ function FlowCanvas() {
 
 export default function Flow() {
 	return (
-		<ReactFlowProvider>
+		<>
+			{/* <ReactFlowProvider> */}
 			<FlowCanvas />
 			<CommandMenu />
-		</ReactFlowProvider>
+			{/* </ReactFlowProvider> */}
+		</>
 	);
 }

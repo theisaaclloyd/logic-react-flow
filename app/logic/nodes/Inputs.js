@@ -1,40 +1,30 @@
-import { Handle, Position } from 'reactflow';
-import 'reactflow/dist/style.css';
-import storeManager from '../utils/store';
+import { Handle, Position, useReactFlow } from '@xyflow/react';
+import { memo } from "react";
+import "@xyflow/react/dist/style.css";
 import StateColor from '../utils/StateColor';
 
-const InputButton = ({ id, selected }) => {
-	const { nodes, setNodes } = storeManager();
-
-	const currNode = nodes.filter((n) => n.id == id)[0];
-	const currNodeState = currNode?.data?.output?.[0];
+const InputButton = ({ id, data, selected }) => {
+	const { updateNodeData } = useReactFlow();
 
 	const onClick = (e) => {
-		setNodes(nodes.map((n) => {
-			if (n.id == id) {
-				return { ...n, data: { ...n.data, output: { 0: Number(!currNodeState) } } };
-			} else {
-				return n;
-			}
-		}));
+		updateNodeData(id, { ...data, out: data.out != 1 ? 1 : 0});
 	};
-	//<div className='text-black'>{JSON.stringify(nodes.filter((n) => n.id == id))}</div>
-	//<input type="checkbox" onChange={onInputChange} checked={(currNode?.data?.output[0] === 1)} className="m-auto" />
+
 	return (
 		<div
-			className={`w-7 h-7 text-black rounded-md cursor-pointer 
-				flex justify-center items-center border-2 ${selected ? 'border-blue-600' : 'border-gray-600'}`}
+			className={`w-7 h-7 text-black rounded-sm cursor-pointer 
+				flex justify-center items-center border-2 ${selected ? 'border-blue-600' : 'border-gray-900'}`}
 			onClick={onClick}
-			style={{ backgroundColor: StateColor(currNodeState)}}
+			style={{ backgroundColor: StateColor(data.out) }}
 		>
 			<Handle
 				type="source"
 				position={Position.Right}
 				id={`${id}-out`}
-				style={{ top: '50%', backgroundColor: StateColor(currNodeState), border: '1px solid black' }}
+				style={{ top: '50%', backgroundColor: StateColor(data.out), border: '1px solid black', borderRadius: '0%'}}
 			/>
 		</div>
 	);
 };
 
-export { InputButton };
+export default memo(InputButton);

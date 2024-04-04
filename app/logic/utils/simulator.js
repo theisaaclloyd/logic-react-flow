@@ -8,7 +8,7 @@
  */
 
 
-export default function Simulator(nodes, edges) {
+ export default function Simulator(nodes, edges) {
 
 	// Logic gate function
 	const logicGates = {

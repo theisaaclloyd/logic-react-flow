@@ -1,7 +1,8 @@
 
-import { TwoInputAnd, TwoInputOr } from '../nodes/BasicGates';
-import { InputButton } from '../nodes/Inputs';
-import { OutputLED } from '../nodes/Outputs';
+import TwoInputAnd from '../nodes/AndGate';
+import TwoInputOr from '../nodes/OrGate';
+import InputButton from '../nodes/Inputs';
+import OutputLED from '../nodes/Outputs';
 
 import Edge from '../nodes/Edge';
 
