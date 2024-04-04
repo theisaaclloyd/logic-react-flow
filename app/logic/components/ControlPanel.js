@@ -1,13 +1,13 @@
-import { Controls, ControlButton } from 'reactflow';
-import 'reactflow/dist/style.css';
+import { Controls, ControlButton } from '@xyflow/react';
+import "@xyflow/react/dist/style.css";
 import { toPng } from 'html-to-image';
 import { CameraIcon, MagicWandIcon } from '@radix-ui/react-icons';
-import storeManager from '../utils/store';
+//import useStore from '../utils/store';
 
 
 export default function ControlPanel() {
 
-	const simulate = storeManager(state => state.simulateCircuit);
+	//const simulate = useStore(state => state.simulateCircuit);
 
 	const Screenshot = () => {
 		toPng(document.querySelector('.react-flow'), {
@@ -29,17 +29,19 @@ export default function ControlPanel() {
 			a.setAttribute('download', `circuit-${tag}.png`);
 			a.setAttribute('href', blobUrl);
 			a.click();
+		}).catch((e) => {
+			console.error('Unknown Error');
 		});
 	};
 
 	return (
-		<Controls position='bottom-right'>
+		<Controls position='bottom-right' className='text-black'>
 			<ControlButton onClick={Screenshot}>
-				<CameraIcon className='text-black' />
+				<CameraIcon />
 			</ControlButton>
 
-			<ControlButton onClick={simulate}>
-				<MagicWandIcon className='text-black' />
+			<ControlButton /* onClick={simulate} */>
+				<MagicWandIcon />
 			</ControlButton>
 		</Controls>
 	);
