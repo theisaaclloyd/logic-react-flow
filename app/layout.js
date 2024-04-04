@@ -9,6 +9,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <head>
+        <script defer data-domain="logic-simulator.vercel.app" src="https://plausible.isaacclloyd.com/js/script.js"></script>
         <link rel="stylesheet" href="https://use.typekit.net/vqj5avh.css"></link>
         <link rel="icon" href="assets/images/favicon.ico" />
       </head>
