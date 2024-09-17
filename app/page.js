@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function Home() {
 	return (
-		<main className="flex flex-col fade-in mx-auto max-w-3xl px-20">
+		<main className="flex flex-col mx-auto max-w-3xl px-20">
 			<section className="h-screen" id="about">
 				<div className="h-full flex items-center justify-center text-left flex-col">
 					<h1 className="text-5xl underline underline-offset-8 text-test3">About</h1>
